@@ -18,7 +18,7 @@ class ReplayBuffer:
     def size(self):
         return len(self.buffer)
 
-def train_agent(env: FantasyFootballEnv, agent: Agent, num_episodes, batch_size):
+def train_agent(env: FantasyFootballEnv, agent: Agent, num_episodes, batch_size, update_frequency):
     replay_buffer = ReplayBuffer(max_size=10000)
     scores = []
 
@@ -37,7 +37,8 @@ def train_agent(env: FantasyFootballEnv, agent: Agent, num_episodes, batch_size)
             replay_buffer.add((observations, action, reward, next_observation, done))
             score += reward
 
-            if replay_buffer.size() >= batch_size:
+            if env.current_step % update_frequency == 0 and replay_buffer.size() >= batch_size:
+                print('We are learning')
                 batch = replay_buffer.sample(batch_size)
                 agent.learn(batch)
 
@@ -55,6 +56,7 @@ gamma = 0.99
 epsilon = 1.0
 eps_min = 0.01
 eps_dec = 1e-5
+update_frequency = 4
 
 script_dir = os.path.dirname(os.path.abspath(''))
 proj_dir = os.path.join(script_dir, 'fantasy')
@@ -77,6 +79,6 @@ n_actions = env.action_space.n
 agent = Agent(stats_dims, board_dims, roster_dims, n_actions, learning_rate, gamma, epsilon, eps_dec, eps_min)
 
 # Train the agent
-scores = train_agent(env, agent, num_episodes, batch_size)
+scores = train_agent(env, agent, num_episodes, batch_size, update_frequency)
 
 # Plot scores or perform further analysis
