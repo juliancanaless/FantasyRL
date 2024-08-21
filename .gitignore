@@ -1,0 +1,6 @@
+myenv/
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+train.txt
+SuttonBartolPRLBook2ndEd.pdf
