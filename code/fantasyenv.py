@@ -110,7 +110,6 @@ class FantasyFootballEnv(gym.Env):
 
         self.action_space = spaces.Discrete(len(self.draftBoard_))
 
-        self.current_round = 0
         self.current_team_idx = 0
         self.current_step = 0
         self.state = self._get_state()
@@ -270,15 +269,15 @@ class FantasyFootballEnv(gym.Env):
     def _run_draft(self):
         agent_team_name = self.team.name 
 
-        for _ in range(self.current_round, self.draft.numRounds):
+        for _ in range(self.draft.currentRound, self.draft.numRounds+1):
             for idx in range(self.current_team_idx, len(self.snake)):
                 team = self.snake[idx]
                 if team.name == agent_team_name:
                     self.state = self._get_state()
-                    self.current_team_idx = idx + 1
-                    self.current_round = _
-                    if self.current_team_idx % len(self.snake) == 0:
-                        self.current_round += 1
+                    self.current_team_idx = (idx + 1) % len(self.snake)
+                    if self.current_team_idx == 0:
+                        self.draft.currentRound += 1
+                        self.snake.reverse()
                     return  # Halt the draft process to allow the agent to make a pick
                 else:
                     response = self.draft.otherTeamSelection(team)
@@ -393,7 +392,6 @@ class FantasyFootballEnv(gym.Env):
         }
         self.shared_label_encoders['FantasyPosition'].fit(fant_positions)
         self._process_data()
-        self.current_round = 0
         self.current_team_idx = 0
         self.current_step = 0
         self.state = self._get_state()
