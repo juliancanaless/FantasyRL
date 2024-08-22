@@ -112,6 +112,7 @@ class FantasyFootballEnv(gym.Env):
 
         self.current_team_idx = 0
         self.current_step = 0
+        self.update_round_info = False
         self.state = self._get_state()
 
     def update_action_space(self, obs: pd.DataFrame):
@@ -269,6 +270,11 @@ class FantasyFootballEnv(gym.Env):
     def _run_draft(self):
         agent_team_name = self.team.name 
 
+        if self.update_round_info:
+            self.draft.currentRound += 1
+            self.snake.reverse()
+            self.update_round_info = False
+
         for _ in range(self.draft.currentRound, self.draft.numRounds+1):
             for idx in range(self.current_team_idx, len(self.snake)):
                 team = self.snake[idx]
@@ -276,8 +282,7 @@ class FantasyFootballEnv(gym.Env):
                     self.state = self._get_state()
                     self.current_team_idx = (idx + 1) % len(self.snake)
                     if self.current_team_idx == 0:
-                        self.draft.currentRound += 1
-                        self.snake.reverse()
+                        self.update_round_info = True
                     return  # Halt the draft process to allow the agent to make a pick
                 else:
                     response = self.draft.otherTeamSelection(team)
@@ -395,6 +400,7 @@ class FantasyFootballEnv(gym.Env):
         self.current_team_idx = 0
         self.current_step = 0
         self.state = self._get_state()
+        self.update_round_info = False
         return self.state
     
     # def render(self, mode='human', close=False):
